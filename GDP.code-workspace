@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "Green Diamond Productions Public Site",
+			"path": "."
+		},
+		{
+			"name": "diamond_object",
+			"path": "/Users/davidmarx/Downloads/diamond_object"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "Green Diamond Productions Public Site"
+	}
+}

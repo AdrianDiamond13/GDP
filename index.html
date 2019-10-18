@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Green Diamond Productions</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/102/three.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script>
+    <script src="https://cdn.rawgit.com/mrdoob/three.js/r92/examples/js/loaders/GLTFLoader.js"></script>
+
+    
+    <script>
+        //Set up the scene, camera, and renderer for every Three.js project
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, .01, 1000);
+        var renderer = new THREE.WebGLRenderer({antialias: true});
+
+        //set the camera's position
+        camera.position.z = 3;
+        
+        renderer.setClearColor("#000000");
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        
+        //FOR BG IMAGE MESH: create canvas element with renderer settings
+        document.body.appendChild(renderer.domElement);
+
+        //resize the renderer and the camera aspect ration when we shrink/expand the window
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            //we call this everytime an adjustment on the window is made
+            camera.updateProjectionMatrix();
+        })
+
+
+    //add diamond object
+    var loader = new THREE.GLTFLoader();
+
+    let diamond;
+
+    loader.load(
+	// resource URL
+	'/diamond_object/scene.gltf',
+	// called when the resource is loaded
+	function ( gltf ) {
+        diamond = gltf.scene
+
+		scene.add( gltf.scene );
+
+        console.log("gltf", gltf)
+        console.log("diamond.scale", diamond.scale)
+        console.log('scene.children[3].children', scene.children[3].children)
+	},
+	// called while loading is progressing
+	function ( xhr ) {
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+	},
+	// called when loading has errors
+	function ( error ) {
+		console.log( 'An error happened' );
+	}
+);
+
+        
+        //everytime you create an object in three.js, it has two properties: geometry and material
+
+        //add a light to the scene
+        var light = new THREE.PointLight('#008000', 1, 500);
+        light.position.set(1,0,2);
+        scene.add(light);
+
+        /*
+        var light2 = new THREE.PointLight('#008000', 1, 500);
+        light2.position.set(1,0,1);
+        scene.add(light2);
+
+        var light3 = new THREE.PointLight('#008000', 1, 500);
+        light3.position.set(-1,-1,-2);
+        scene.add(light3);
+
+        var light4 = new THREE.PointLight('#00FF00', 1, 500);
+        light4.position.set(0,-2,-1);
+        scene.add(light4);
+        */
+
+        var rectLight2 = new THREE.RectAreaLight( '#00FF00', intensity,  width, height );
+        rectLight2.position.set( -1, 0, 0 );
+        rectLight2.lookAt( 0, 0, 0 );
+        
+        var light5 = new THREE.PointLight('#008000', 1, 500);
+        light5.position.set(0,0,0);
+        scene.add(light5);
+
+        var light6 = new THREE.PointLight('#008000', 1, 500);
+        light6.position.set(0,1,0);
+        scene.add(light6);
+
+        var light7 = new THREE.PointLight('#003E00', 1, 500);
+        light7.position.set(0,-1,0);
+        scene.add(light7);
+        
+        var width = 10;
+        var height = 10;
+        var intensity = 3;
+        var rectLight = new THREE.RectAreaLight( '#00FF00', intensity,  width, height );
+        rectLight.position.set( 5, 5, 0 );
+        rectLight.lookAt( 0, 0, 0 );
+        scene.add( rectLight )
+
+        //Flag to determine if mouse is over the box
+        let isMouseOver = false;
+        let hasClicked = 0;
+        
+        //Raycaster
+        var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
+
+        //onMouseMove function
+        function onMouseMove(event){
+            event.preventDefault();
+            hasClicked++
+            console.log("hasClicked", hasClicked)
+            
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            var intersects = raycaster.intersectObjects(scene.children, true);
+            if(intersects.length === 0){
+                isMouseOver = false;
+                //console.log('NO INTERSECTION')
+            }
+            for(var i=0; i<intersects.length; i++){
+                isMouseOver = true
+                //console.log('INTERSECTION')
+            }
+        }
+
+        //Event listener when someone hovers over the box
+        window.addEventListener("click", onMouseMove);
+        
+
+  // Load the background texture
+//var texture = THREE.ImageUtils.loadTexture( './Assets/Dark-Deep-Space.jpg' );
+//var texture = THREE.ImageUtils.loadTexture( './Assets/Deep-Space.jpg' );
+//var texture = THREE.ImageUtils.loadTexture( './Assets/Green-Nebula.jpg' );
+//var texture = THREE.ImageUtils.loadTexture( './Assets/green_neb.jpg' );
+/*
+  var backgroundMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(3, 3, 0),
+      new THREE.MeshBasicMaterial({
+          map: texture
+      }));
+
+  backgroundMesh.material.depthTest = false;
+  backgroundMesh.material.depthWrite = false;
+
+  // Create your background scene
+  var backgroundScene = new THREE.Scene();
+  var backgroundCamera = new THREE.Camera();
+  backgroundScene.add(backgroundCamera );
+  backgroundScene.add(backgroundMesh );
+*/
+
+
+        //Create clock, set autostart to true
+        var clock = new THREE.Clock(true);
+
+        //to maintain the shape of the object as we resize window, we create this render method
+        //call the render method on the renderer to render the scene and the camera
+        var render =  function() {
+            requestAnimationFrame(render);
+
+            //backgroundMesh.rotation.z += .0005
+            
+            if(!isMouseOver && diamond.scale.x<=1){
+              
+                diamond.rotation.y += .005;
+                diamond.rotation.z += .001
+                diamond.rotation.x += .005
+
+            }else if(hasClicked <2){
+                
+                //Once that is all set up, you can change your cube-moving code to:
+                if(diamond.scale.x < 7.5){
+                //console.log(rectLight)
+                rectLight.intensity -= .05
+                diamond.rotation.y += .01
+                diamond.scale.x += .05;
+                diamond.scale.y += .05;
+                diamond.scale.z += .05;
+                console.log("size:",diamond.scale)
+                //INSIDE ROTATE
+                }else if(hasClicked === 1 && diamond.scale.x > 7.5){
+                    diamond.rotation.y += .005;
+                    diamond.rotation.x += .005;
+                    diamond.rotation.z += .001
+                }
+               
+            }else if(hasClicked === 2 && diamond.scale.x>1){
+            
+                //console.log('yup');
+                diamond.scale.x -= .05;
+                diamond.scale.y -= .05;
+                diamond.scale.z -= .05;
+                rectLight.intensity += .05;
+                diamond.rotation.y += .005;
+                diamond.rotation.z += .001
+                diamond.rotation.x += .005
+                //isMouseOver = false;
+                }else if(hasClicked === 2 && diamond.scale.x<2){
+                    hasClicked = 0;
+                    isMouseOver = false;
+                }
+            
+            renderer.autoClear = false;
+            renderer.clear();
+            //renderer.render(backgroundScene , backgroundCamera );
+            renderer.render(scene, camera)
+        }
+        //call render function we just made
+        render();
+
+    </script> 
+   
+</body>
+</html> 
